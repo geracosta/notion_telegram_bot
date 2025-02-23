@@ -27,3 +27,7 @@ NOTION_DATABASE_ID = "eccd91d821294db1a7d691be666cb9f4"
 TELEGRAM_BOT_TOKEN = "6993280038:AAE-58JxXCJV2SBuABs2ewqdLnq8DBme5aA"
 TELEGRAM_CHAT_ID = "-4113007781"
 TZ = "America/Argentina/Buenos_Aires"
+
+[services]
+  auto_stop_machines = false
+  min_machines_running = 1
