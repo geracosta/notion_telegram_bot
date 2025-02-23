@@ -1,4 +1,4 @@
-﻿# 🤦 Notion Telegram Bot
+﻿# Notion Telegram Bot
 
 Este bot de Telegram se conecta con Notion para notificar tareas pendientes y próximas a vencer. Se ejecuta en **Fly.io** y usa **SQLite** para almacenar tareas notificadas.
 
