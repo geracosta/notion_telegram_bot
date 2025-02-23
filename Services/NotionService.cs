@@ -35,9 +35,10 @@ namespace notion_telegram_bot.Services
 
             try
             {
-                // Realiza la consulta a la base de datos de Notion.
+                _logger.LogInformation("Consultando la base de datos de Notion a las {Time}", DateTime.Now);
                 var queryParameters = new DatabasesQueryParameters();
                 var queryResponse = await _client.Databases.QueryAsync(_databaseId, queryParameters);
+                _logger.LogInformation("Se han recibido {Count} registros de Notion.", queryResponse.Results.Count);
 
                 foreach (var page in queryResponse.Results)
                 {
@@ -58,29 +59,29 @@ namespace notion_telegram_bot.Services
                     {
                         if (dateProperty is DatePropertyValue dateValue)
                         {
-                            // Verifica que Start tenga valor (Start es de tipo DateTime? en versiones recientes)
                             if (dateValue.Date.Start != null)
                             {
-                                // Convierte a hora local si es necesario: .ToLocalTime()
                                 dueDate = dateValue.Date.Start.Value;
                             }
                         }
                     }
 
-                    // Filtra solo las tareas cuya fecha sea hoy y que se vencen en menos de una hora
+                    // Filtrado: solo agregar tareas que sean de hoy y se vencen en menos de una hora
                     if (dueDate.HasValue)
                     {
+                        // Convierte la fecha obtenida (probablemente en UTC) a hora local
+                        DateTime localDueDate = dueDate.Value.ToLocalTime();
                         DateTime now = DateTime.Now;
                         DateTime oneHourLater = now.AddHours(1);
 
-                        // Se comprueba que la fecha de vencimiento sea hoy y se encuentre entre el momento actual y la próxima hora.
-                        if (dueDate.Value.Date == now.Date && dueDate.Value >= now && dueDate.Value <= oneHourLater)
+                        // Comprueba que la tarea sea para hoy y que se encuentre entre el momento actual y una hora después
+                        if (localDueDate.Date == now.Date && localDueDate >= now && localDueDate <= oneHourLater)
                         {
                             tasks.Add(new NotionTask
                             {
                                 Id = page.Id,
                                 Name = taskName,
-                                DueDate = dueDate
+                                DueDate = localDueDate
                             });
                         }
                     }

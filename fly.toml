@@ -1,0 +1,29 @@
+# fly.toml app configuration file generated for notion-telegram-bot on 2025-02-23T00:06:57-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'notion-telegram-bot'
+primary_region = 'eze'
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[env]
+NOTION_INTEGRATION_TOKEN = "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"
+NOTION_DATABASE_ID = "eccd91d821294db1a7d691be666cb9f4"
+TELEGRAM_BOT_TOKEN = "6993280038:AAE-58JxXCJV2SBuABs2ewqdLnq8DBme5aA"
+TELEGRAM_CHAT_ID = "-4113007781"
+TZ = "America/Argentina/Buenos_Aires"

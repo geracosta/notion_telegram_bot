@@ -4,7 +4,7 @@ using notion_telegram_bot.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-Host.CreateDefaultBuilder(args)
+var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         // Registrar el DbContext para SQLite
@@ -14,11 +14,9 @@ Host.CreateDefaultBuilder(args)
         // Registro del servicio en segundo plano
         services.AddHostedService<Worker>();
 
-        // Registra los servicios de Notion y Telegram (estas pueden ser singleton o lo que convenga)
+        // Registra otros servicios
         services.AddSingleton<INotionService, NotionService>();
         services.AddSingleton<ITelegramService, TelegramService>();
-
-        // Registrar TaskProcessor como Scoped, ya que consume AppDbContext (scoped)
         services.AddScoped<ITaskProcessor, TaskProcessor>();
     })
     .ConfigureLogging(logging =>
@@ -26,5 +24,13 @@ Host.CreateDefaultBuilder(args)
         logging.ClearProviders();
         logging.AddConsole();
     })
-    .Build()
-    .Run();
+    .Build();
+
+// Aplicar migraciones automáticamente
+using (var scope = host.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+host.Run();
