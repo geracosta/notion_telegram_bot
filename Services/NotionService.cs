@@ -35,9 +35,13 @@ namespace notion_telegram_bot.Services
 
             try
             {
-                _logger.LogInformation("Consultando la base de datos de Notion a las {Time}", DateTime.Now);
-                var queryParameters = new DatabasesQueryParameters();
-                var queryResponse = await _client.Databases.QueryAsync(_databaseId, queryParameters);
+                _logger.LogInformation("Consultando la base de datos de Notion a las {Time}", DateTime.UtcNow);
+
+                var dateFilter = new DateFilter("Fecha", onOrAfter: DateTime.Now);
+
+                var queryParams = new DatabasesQueryParameters { Filter = dateFilter };
+
+                var queryResponse = await _client.Databases.QueryAsync(_databaseId, queryParams);
                 _logger.LogInformation("Se han recibido {Count} registros de Notion.", queryResponse.Results.Count);
 
                 foreach (var page in queryResponse.Results)
@@ -57,33 +61,21 @@ namespace notion_telegram_bot.Services
                     // Extrae la propiedad "Fecha" (de tipo Date) incluyendo fecha y hora
                     if (page.Properties.TryGetValue("Fecha", out var dateProperty))
                     {
-                        if (dateProperty is DatePropertyValue dateValue)
+                        if (dateProperty is DatePropertyValue dateValue && dateValue.Date.Start != null)
                         {
-                            if (dateValue.Date.Start != null)
-                            {
-                                dueDate = dateValue.Date.Start.Value;
-                            }
+                            // Asegurar que la fecha tiene el tipo UTC antes de la conversión
+                            dueDate = dateValue.Date.Start.Value;
                         }
                     }
 
-                    // Filtrado: solo agregar tareas que sean de hoy y se vencen en menos de una hora
                     if (dueDate.HasValue)
                     {
-                        // Convierte la fecha obtenida (probablemente en UTC) a hora local
-                        DateTime localDueDate = dueDate.Value.ToLocalTime();
-                        DateTime now = DateTime.Now;
-                        DateTime oneHourLater = now.AddHours(1);
-
-                        // Comprueba que la tarea sea para hoy y que se encuentre entre el momento actual y una hora después
-                        if (localDueDate.Date == now.Date && localDueDate >= now && localDueDate <= oneHourLater)
+                        tasks.Add(new NotionTask
                         {
-                            tasks.Add(new NotionTask
-                            {
-                                Id = page.Id,
-                                Name = taskName,
-                                DueDate = localDueDate
-                            });
-                        }
+                            Id = page.Id,
+                            Name = taskName,
+                            DueDate = dueDate.Value
+                        });
                     }
                 }
             }

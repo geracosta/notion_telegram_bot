@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using notion_telegram_bot.Data;
 using notion_telegram_bot.Services;
 using Microsoft.Extensions.Hosting;
@@ -26,7 +26,7 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-// Aplicar migraciones autom�ticamente
+// Aplicar migraciones automáticamente
 using (var scope = host.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
